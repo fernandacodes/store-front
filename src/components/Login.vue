@@ -9,7 +9,7 @@
           <FormItem>
             <FormLabel >Email</FormLabel>
             <FormControl>
-              <Input type="text" placeholder="shadcn" v-bind="emailField" />
+              <Input type="text" placeholder="shadcn@email.com" v-bind="emailField" />
             </FormControl>
           </FormItem>
         </FormField>
@@ -29,32 +29,44 @@
     </div>
   </template>
   
-  <script setup lang="ts">
-  import { useForm } from 'vee-validate';
-  import { toTypedSchema } from '@vee-validate/zod';
-  import Input from './ui/input/Input.vue';
-  import * as z from 'zod';
-  import { Button } from '@/components/ui/button';
-  import {
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-  } from '@/components/ui/form';
-  
-  const formSchema = toTypedSchema(z.object({
-    email: z.string().min(2).max(255),
-    password: z.string().min(6).max(30),
-  }));
-  
-  const form = useForm({
-    validationSchema: formSchema,
-  });
-  
-  const onSubmit = form.handleSubmit((values) => {
-    console.log('Form submitted!', values);
-  });
-  </script>
+<script setup lang="ts">
+import { useForm } from 'vee-validate';
+import { toTypedSchema } from '@vee-validate/zod';
+import Input from './ui/input/Input.vue';
+import * as z from 'zod';
+import { Button } from '@/components/ui/button';
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+} from '@/components/ui/form';
+import axios from 'axios';
+import router from '@/router/route';
+
+const formSchema = toTypedSchema(z.object({
+  email: z.string().min(2).max(255),
+  password: z.string().min(6).max(30),
+}));
+
+const form = useForm({
+  validationSchema: formSchema,
+});
+
+const onSubmit = form.handleSubmit(async (values) => {
+  try {
+    const response = await axios.post('http://localhost:8000/api/login', {
+      email: values.email,
+      password: values.password,
+    });
+    await localStorage.setItem('token', response.data.token); // Ajuste 'response.data.token' conforme a estrutura da sua resposta
+    router.push('/');
+  } catch (error) {
+    console.error('Error during login:', );
+  }
+});
+</script>
+
   
   <style scoped>
 .container {

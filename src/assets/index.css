@@ -76,3 +76,10 @@
     @apply bg-background text-foreground;
   }
 }
+
+.header{
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+}
