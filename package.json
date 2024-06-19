@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@radix-ui/react-radio-group": "^1.2.0",
     "@vee-validate/zod": "^4.13.1",
     "@vueuse/core": "^10.11.0",
     "axios": "^1.7.2",

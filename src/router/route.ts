@@ -9,6 +9,12 @@ import { isAuthenticated } from '@/utils/auth';
 
 const routes = [
   {
+    path: '/',
+    name: 'Products',
+    component: Products,
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/login',
     name: 'Login',
     component: Login
@@ -31,12 +37,6 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/',
-    name: 'Products',
-    component: Products,
-    meta: { requiresAuth: true }
-  },
-  {
     path: '/categories',
     name: 'Categories',
     component: Categories,
@@ -52,6 +52,7 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   if (to.matched.some(record => record.meta.requiresAuth)) {
     if (!isAuthenticated()) {
+      from
       next({ path: '/login' });
     } else {
       next();
