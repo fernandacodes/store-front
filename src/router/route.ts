@@ -6,8 +6,14 @@ import CreateCategory from '@/components/CreateCategory.vue';
 import Products from '@/components/Products.vue';
 import Categories from '@/components/Categories.vue';
 import { isAuthenticated } from '@/utils/auth';
-
+import UpdateProduct from './../components/UpdateProduct.vue'
 const routes = [
+  {
+    path: '/',
+    name: 'Products',
+    component: Products,
+    meta: { requiresAuth: true }
+  },
   {
     path: '/login',
     name: 'Login',
@@ -25,15 +31,15 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/create-category',
-    name: 'CreateCategory',
-    component: CreateCategory,
+    path: '/update-product/:id',
+    name: 'UpdateProduct',
+    component: UpdateProduct,
     meta: { requiresAuth: true }
   },
   {
-    path: '/',
-    name: 'Products',
-    component: Products,
+    path: '/create-category',
+    name: 'CreateCategory',
+    component: CreateCategory,
     meta: { requiresAuth: true }
   },
   {
@@ -52,6 +58,7 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   if (to.matched.some(record => record.meta.requiresAuth)) {
     if (!isAuthenticated()) {
+      from
       next({ path: '/login' });
     } else {
       next();

@@ -1,13 +1,13 @@
 <template>
-    <div class="container">
-        <div class="login-container">
-            <div class="login-container-title">
-                <h2>Login</h2>
-            </div>
-      <form @submit="onSubmit" class="login-form">
+  <div class="container">
+    <div class="login-container">
+      <div class="login-container-title">
+        <h2>Login</h2>
+      </div>
+      <form @submit.prevent="onSubmit" class="login-form">
         <FormField v-slot="{ componentField: emailField }" name="email">
           <FormItem>
-            <FormLabel >Email</FormLabel>
+            <FormLabel>Email</FormLabel>
             <FormControl>
               <Input type="text" placeholder="shadcn@email.com" v-bind="emailField" />
             </FormControl>
@@ -25,24 +25,32 @@
           Submit
         </Button>
       </form>
+      <div class="register-link">
+        Don't have an account? <a @click="goToRegister">Click here to create one</a>.
+      </div>
     </div>
-    </div>
-  </template>
-  
+  </div>
+  <Toaster />
+</template>
+
 <script setup lang="ts">
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
 import Input from './ui/input/Input.vue';
 import * as z from 'zod';
-import { Button } from '@/components/ui/button';
+import Button from './ui/button/Button.vue';
 import {
   FormControl,
   FormField,
   FormItem,
   FormLabel,
 } from '@/components/ui/form';
+import { useToast } from '@/components/ui/toast/use-toast';
+import { Toaster } from '@/components/ui/toast';
 import axios from 'axios';
 import router from '@/router/route';
+
+const { toast } = useToast();
 
 const formSchema = toTypedSchema(z.object({
   email: z.string().min(2).max(255),
@@ -59,28 +67,35 @@ const onSubmit = form.handleSubmit(async (values) => {
       email: values.email,
       password: values.password,
     });
-    await localStorage.setItem('token', response.data.token); // Ajuste 'response.data.token' conforme a estrutura da sua resposta
-    router.push('/');
+    localStorage.setItem('token', response.data.token); // Ajuste 'response.data.token' conforme a estrutura da sua resposta
+    router.push('/')
   } catch (error) {
-    console.error('Error during login:', );
+    toast({
+      title: 'Erro',
+      description: 'Erro durante o login. Verifique suas credenciais.',
+      variant: 'destructive',
+    });
   }
 });
+
+const goToRegister = () => {
+  router.push('/register');
+};
 </script>
 
-  
-  <style scoped>
+<style scoped>
 .container {
   width: 100%;
-  min-height: 100vh; /* Alterado para min-height */
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.login-container-title{
-    display: flex;
-    width: 100%;
-    justify-content: center;
+.login-container-title {
+  display: flex;
+  width: 100%;
+  justify-content: center;
 }
 
 .login-container {
@@ -95,9 +110,11 @@ const onSubmit = form.handleSubmit(async (values) => {
   display: flex;
   flex-direction: column;
 }
-.login-button{
-    margin-top: 1rem;
+
+.login-button {
+  margin-top: 1rem;
 }
+
 .login-form h2 {
   margin-bottom: 20px;
 }
@@ -106,6 +123,15 @@ const onSubmit = form.handleSubmit(async (values) => {
   width: 100%;
   margin-bottom: 15px;
 }
-</style>
 
-  
+.register-link {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.register-link a {
+  color: #007bff;
+  cursor: pointer;
+  text-decoration: underline;
+}
+</style>

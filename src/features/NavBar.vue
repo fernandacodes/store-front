@@ -7,10 +7,19 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu'
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
 import { logout } from '@/utils/logout';
 import Button from '@/components/ui/button/Button.vue';
+import {
+      AlertDialog,
+      AlertDialogAction,
+      AlertDialogCancel,
+      AlertDialogContent,
+      AlertDialogDescription,
+      AlertDialogFooter,
+      AlertDialogHeader,
+      AlertDialogTitle,
+      AlertDialogTrigger,
+  } from '@/components/ui/alert-dialog'
 
 // Define as rotas disponíveis na navegação
 const routes = [
@@ -50,8 +59,8 @@ const routes = [
   }
 ];
 
-function handleLogout() {
-  logout();
+async function handleLogout() {
+  await logout();
 }
 </script>
 
@@ -73,11 +82,23 @@ function handleLogout() {
           </ul>
         </NavigationMenuContent>
       </NavigationMenuItem>
-      <Button  @click=handleLogout()>Logout</Button>
+      <AlertDialog>
+              <AlertDialogTrigger as-child>
+                <Button>Logout</Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Tem certeza que deseja sair ?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    você será redirecionado para a tela de login
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction @click="handleLogout()">Confirmar</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
     </NavigationMenuList>
   </NavigationMenu>
 </template>
-
-<style>
-/* Adicione aqui seu estilo personalizado se necessário */
-</style>

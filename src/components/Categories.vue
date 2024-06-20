@@ -12,8 +12,23 @@
           <CardContent>
           </CardContent>
           <CardFooter class="flex justify-between px-6 pb-6">
-            <Button variant="outline">Editar</Button>
-            <Button>Excluir</Button>
+            <AlertDialog>
+              <AlertDialogTrigger as-child>
+                <Button>Excluir</Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Esta ação não pode ser desfeita. Isso excluirá permanentemente a categoria.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction @click="deleteCategory(category.id)">Confirmar</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </CardFooter>
         </Card>
       </div>
@@ -46,8 +61,6 @@
   import {
       Card,
       CardContent,
-      CardDescription,
-      CardFooter,
       CardHeader,
       CardTitle,
   } from '@/components/ui/card';
@@ -61,6 +74,17 @@
       PaginationNext,
       PaginationPrev,
   } from '@/components/ui/pagination'
+  import {
+      AlertDialog,
+      AlertDialogAction,
+      AlertDialogCancel,
+      AlertDialogContent,
+      AlertDialogDescription,
+      AlertDialogFooter,
+      AlertDialogHeader,
+      AlertDialogTitle,
+      AlertDialogTrigger,
+  } from '@/components/ui/alert-dialog'
   import Button from './ui/button/Button.vue';
   
   const currentPage = ref(1); // Estado inicial da página atual
@@ -91,9 +115,22 @@
                   Authorization: `Bearer ${localStorage.getItem('token')}`,
               },
           });
-          categories.value = response.data; // Ajuste conforme a estrutura da resposta da sua API
+          categories.value = response.data; 
       } catch (error) {
           console.error('Erro ao buscar categorias:', error);
+      }
+  }
+  
+  async function deleteCategory(categoryId: number) {
+      try {
+          await axios.delete(`http://localhost:8000/api/categories/${categoryId}`, {
+              headers: {
+                  Authorization: `Bearer ${localStorage.getItem('token')}`,
+              },
+          });
+          categories.value = categories.value.filter(category => category.id !== categoryId);
+      } catch (error) {
+          console.error('Erro ao excluir categoria:', error);
       }
   }
   
@@ -107,7 +144,7 @@
   </script>
   
   <style scoped>
-  .container{
+  .container {
       display: flex;
       align-items: center;
       width: 100%;
@@ -115,7 +152,7 @@
       flex-grow: 1;
       height: 750px;
   }
-  .container-pagination{
+  .container-pagination {
       display: flex;
       justify-content: center;
       align-items: center;

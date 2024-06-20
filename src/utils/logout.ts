@@ -1,6 +1,7 @@
 // src/utils/logout.ts
 import router from "@/router/route";
-export function logout() {
+export async function logout() {
   localStorage.removeItem('token');
   router.push('/login');
+
 }

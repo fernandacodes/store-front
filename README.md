@@ -1,9 +1,23 @@
-# Vue 3 + TypeScript + Vite
+### Executando um Projeto Vue.js
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+#### 1. Instalar o Node.js
 
-## Recommended Setup
+Primeiro, verifique se o Node.js está instalado em seu sistema. Se não estiver, siga estas etapas:
 
-- [VS Code](https://code.visualstudio.com/) + [Vue - Official](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (previously Volar) and disable Vetur
+- **Baixe o Node.js na versao 22.1.0**: Visite [nodejs.org](https://nodejs.org/).
+- **Instale o Node.js**: Siga as instruções do instalador para o seu sistema operacional. O Node.js também inclui o npm (Node Package Manager) que será usado para instalar dependências e gerenciar o projeto.
 
-- Use [vue-tsc](https://github.com/vuejs/language-tools/tree/master/packages/tsc) for performing the same type checking from the command line, or for generating d.ts files for SFCs.
+#### 2. Instalar o Vue CLI (Command Line Interface)
+
+O Vue CLI é uma ferramenta de linha de comando para criar e gerenciar projetos Vue.js. Instale-o globalmente usando npm:
+
+```bash
+npm install -g @vue/cli
+
+#### 3. Entre na pasta raiz do projeto /store-front
+
+Execute o comando npm install
+
+Para rodar o projeto execute comando npm run dev
+
+
