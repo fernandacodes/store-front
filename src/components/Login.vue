@@ -38,7 +38,7 @@ import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
 import Input from './ui/input/Input.vue';
 import * as z from 'zod';
-import { Button } from '@/components/ui/button';
+import Button from './ui/button/Button.vue';
 import {
   FormControl,
   FormField,
@@ -68,13 +68,7 @@ const onSubmit = form.handleSubmit(async (values) => {
       password: values.password,
     });
     localStorage.setItem('token', response.data.token); // Ajuste 'response.data.token' conforme a estrutura da sua resposta
-    toast({
-      title: 'Sucesso',
-      description: 'Login realizado com sucesso!',
-    });
-    setTimeout(() => {
-      router.push('/');
-    }, 3000);
+    router.push('/')
   } catch (error) {
     toast({
       title: 'Erro',

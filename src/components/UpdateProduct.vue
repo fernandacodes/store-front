@@ -5,7 +5,7 @@
   <div class="container">
     <div class="product-form-container">
       <div class="product-form-container-title">
-        <h2>Cadastro de Produto</h2>
+        <h2>Atualização de Produto</h2>
       </div>
       <form @submit.prevent="onSubmit" class="product-form">
         <FormField v-slot="{ componentField: nameField }" name="name">
@@ -20,18 +20,16 @@
           <FormItem>
             <FormLabel>Preço</FormLabel>
             <FormControl>
-              <Input type="text" placeholder="Preço" v-bind="priceField" />
+              <Input type="number" placeholder="Preço" v-bind="priceField" />
             </FormControl>
           </FormItem>
         </FormField>
         <FormField v-slot="{ componentField: descriptionField }" name="description">
           <FormItem>
-            <div class="text-area">
-              <FormLabel>Descrição</FormLabel>
+            <FormLabel>Descrição</FormLabel>
             <FormControl>
-              <textarea v-bind="descriptionField" class="textarea-field"></textarea>
+              <Input type="text" v-bind="descriptionField"/>
             </FormControl>
-            </div>
           </FormItem>
         </FormField>
         <FormField v-slot="{ componentField: expirationDateField }" name="expiration_date">
@@ -42,19 +40,19 @@
             </FormControl>
           </FormItem>
         </FormField>
-        <FormField  name="category_id">
+        <FormField name="category_id">
           <FormItem>
             <FormLabel>Categoria</FormLabel>
             <FormControl>
               <Select v-model="selectedCategoryId">
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a category" />
+                  <SelectValue placeholder="Selecione uma categoria" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
                     <SelectLabel>Categorias</SelectLabel>
                     <SelectItem v-for="category in categories" :key="category.id" :value="category.id">
-                      {{ category.name}}
+                      {{ category.name }}
                     </SelectItem>
                   </SelectGroup>
                 </SelectContent>
@@ -63,7 +61,7 @@
           </FormItem>
         </FormField>
         <Button type="submit" class="product-form-button">
-          Cadastrar Produto
+          Atualizar Produto
         </Button>
       </form>
     </div>
@@ -72,9 +70,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watchEffect } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
+import { useRoute } from 'vue-router';
 import Input from './ui/input/Input.vue';
 import * as z from 'zod';
 import NavBar from '@/features/NavBar.vue';
@@ -99,11 +98,13 @@ import { Toaster } from '@/components/ui/toast';
 import axios from 'axios';
 
 const { toast } = useToast();
+const route = useRoute();
+const productId = route.params.id;
 
 const form = useForm({
   validationSchema: toTypedSchema(z.object({
     name: z.string().min(2).max(255),
-    price: z.string().regex(/^\d+(\.\d{1,2})?$/).min(1),
+    price: z.number(),
     description: z.string(),
     expiration_date: z.string().nullable(),
     category_id: z.string()
@@ -111,14 +112,7 @@ const form = useForm({
 });
 
 const categories = ref<Category[]>([]);
-
-const selectedCategoryId = computed({
-  get: () => categories.value.find(category => category.id === form.values.category_id),
-  set: (value: any) => {
-    const category = value.toString();
-    form.setFieldValue('category_id', category); // Garante que seja uma string
-  }
-});
+const selectedCategoryId = ref<string>('');
 
 async function fetchCategories() {
   try {
@@ -128,8 +122,6 @@ async function fetchCategories() {
         title: 'Erro',
         description: 'Token não encontrado',
         variant: 'destructive',
-        duration: 1000
-
       });
       return;
     }
@@ -140,41 +132,74 @@ async function fetchCategories() {
       },
     });
     categories.value = response.data;
+
+    await fetchProduct(productId);
   } catch (error) {
     toast({
       title: 'Erro',
       description: 'Erro ao buscar categorias',
       variant: 'destructive',
-      duration: 1000
-
     });
   }
 }
 
-fetchCategories();
-watchEffect(fetchCategories);
+async function fetchProduct(productId: string) {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      toast({
+        title: 'Erro',
+        description: 'Token não encontrado',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const response = await axios.get(`http://localhost:8000/api/products/${productId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const product = response.data;
+    form.setFieldValue('name', product.name);
+    form.setFieldValue('price', parseFloat(product.price));
+    form.setFieldValue('description', product.description);
+    form.setFieldValue('expiration_date', product.expiration_date);
+    selectedCategoryId.value = product.category_id; // Define o ID da categoria selecionada no campo Select
+    form.setFieldValue('category_id', product.category_id.toString()); // Define o ID da categoria no formulário
+  } catch (error) {
+    toast({
+      title: 'Erro',
+      description: 'Erro ao buscar produto',
+      variant: 'destructive',
+    });
+  }
+}
+
+onMounted(() => {
+  fetchCategories();
+});
 
 const onSubmit = form.handleSubmit(async (values) => {
   try {
     const token = localStorage.getItem('token');
-    await axios.post('http://localhost:8000/api/products', values, {
+    values.category_id = selectedCategoryId.value;
+    await axios.put(`http://localhost:8000/api/products/${productId}`, values, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
     toast({
       title: 'Sucesso',
-      description: 'Produto cadastrado com sucesso!',
-      duration: 1000
-
+      description: 'Produto atualizado com sucesso!',
+      duration:500
     });
   } catch (error) {
     toast({
       title: 'Erro',
-      description: 'Erro durante o cadastro do produto',
+      description: 'Erro durante a atualização do produto',
       variant: 'destructive',
-      duration: 1000
-
+      duration:500
     });
   }
 });
@@ -187,17 +212,6 @@ const onSubmit = form.handleSubmit(async (values) => {
   display: flex;
   justify-content: center;
   align-items: center;
-}
-
-
-.textarea-field{
-  border: 1px solid black;
-}
-
-.text-area{
-  display: flex;
-  width: 100%;
-  flex-direction: column;
 }
 
 .product-form-container {
@@ -213,15 +227,11 @@ const onSubmit = form.handleSubmit(async (values) => {
   flex-direction: column;
 }
 
-.product-button {
-  margin-top: 1rem;
-}
-
 .product-form h2 {
   margin-bottom: 20px;
 }
 
-.product-form.form-item {
+.product-form .form-item {
   width: 100%;
   margin-bottom: 15px;
 }

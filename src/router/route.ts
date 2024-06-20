@@ -6,7 +6,7 @@ import CreateCategory from '@/components/CreateCategory.vue';
 import Products from '@/components/Products.vue';
 import Categories from '@/components/Categories.vue';
 import { isAuthenticated } from '@/utils/auth';
-
+import UpdateProduct from './../components/UpdateProduct.vue'
 const routes = [
   {
     path: '/',
@@ -28,6 +28,12 @@ const routes = [
     path: '/create-product',
     name: 'CreateProduct',
     component: CreateProduct,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/update-product/:id',
+    name: 'UpdateProduct',
+    component: UpdateProduct,
     meta: { requiresAuth: true }
   },
   {

@@ -52,7 +52,7 @@ import { toTypedSchema } from '@vee-validate/zod';
 import Input from './ui/input/Input.vue';
 import * as z from 'zod';
 import router from '@/router/route';
-import { Button } from '@/components/ui/button';
+import Button from './ui/button/Button.vue';
 import {
   FormControl,
   FormField,

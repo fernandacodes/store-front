@@ -12,7 +12,6 @@
           <CardContent>
           </CardContent>
           <CardFooter class="flex justify-between px-6 pb-6">
-            <Button variant="outline">Editar</Button>
             <AlertDialog>
               <AlertDialogTrigger as-child>
                 <Button>Excluir</Button>

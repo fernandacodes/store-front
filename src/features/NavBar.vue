@@ -102,7 +102,3 @@ async function handleLogout() {
     </NavigationMenuList>
   </NavigationMenu>
 </template>
-
-<style>
-/* Adicione aqui seu estilo personalizado se necessário */
-</style>

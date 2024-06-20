@@ -4,23 +4,28 @@
   </div>
   <div class="container">
     <div class="search-container">
-      <input type="text" v-model="searchTerm" placeholder="Pesquise por nome ou descrição..." class="search-input" />
-            <Button variant="default" @click="searchProducts">Pesquisar</Button>
-            <RadioGroup v-model="searchOption" name="search-option"class="radio-group">
-        <RadioGroupItem value="name">Nome</RadioGroupItem>
-        <RadioGroupItem value="description">Descrição</RadioGroupItem>
-      </RadioGroup>
+      <Input type="text" v-model="searchTerm" placeholder="Pesquise por nome ou descrição..." class="search-input" />
+      <Button variant="default" @click="searchProducts">Pesquisar</Button>
+      <div class="radio-group">
+        <input type="radio" id="name" value="name" v-model="searchOption">
+        <label for="name">Nome</label>
+        <div class="radio-item">
+          <input type="radio" id="description" value="description" v-model="searchOption">
+          <label for="description">Descrição</label>
+        </div>
+      </div>
     </div>
     <div class="products-list">
       <Card v-for="product in paginatedProducts" :key="product.id" class="w-[350px] mb-6">
         <CardHeader>
           <CardTitle>{{ product.name }}</CardTitle>
           <CardDescription>{{ product.description }}</CardDescription>
+          <CardFooter>{{product.price }}$</CardFooter>
         </CardHeader>
         <CardContent>
         </CardContent>
         <CardFooter class="flex justify-between px-6 pb-6">
-          <Button variant="outline">Editar</Button>
+          <Button variant="outline" @click="editProduct(product.id)">Editar</Button>
           <AlertDialog>
             <AlertDialogTrigger as-child>
               <Button>Excluir</Button>
@@ -41,9 +46,7 @@
         </CardFooter>
       </Card>
     </div>
-    
-  </div>
-  <div class="container-pagination">
+    <div class="container-pagination">
       <Pagination v-slot="{ page }" :total="totalPages" :sibling-count="1" show-edges :default-page="currentPage"
         @update:page="changePage">
         <PaginationList class="flex items-center gap-1">
@@ -51,7 +54,7 @@
           <PaginationPrev />
           <template v-for="(item, index) in items">
             <PaginationListItem v-if="item.type === 'page'" :key="index" :value="item.value" as-child>
-              <Button class="w-10 h-10 p-0" :variant="item.value === page ? 'default' : 'outline'">
+              <Button class="w-10 h-10 p-0" :variant="item.value === page? 'default' : 'outline'">
                 {{ item.value }}
               </Button>
             </PaginationListItem>
@@ -62,12 +65,15 @@
         </PaginationList>
       </Pagination>
     </div>
+  </div>
+  <Toaster />
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import NavBar from "./../features/NavBar.vue";
 import axios from 'axios';
+import { Input } from './ui/input';
 import {
   Card,
   CardContent,
@@ -98,26 +104,28 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import Button from './ui/button/Button.vue';
-import { Label } from "@/components/ui/label"
+import router from '@/router/route';
+import { Toaster, useToast } from '@/components/ui/toast';
+const { toast } = useToast();
 
-
-
-const searchOption = ref('name'); // Pode ser 'name' ou 'description'
-
+const searchOption = ref('name'); 
 const searchTerm = ref('');
-const currentPage = ref(1); // Estado inicial da página atual
-const itemsPerPage = ref(10); // Quantidade de itens por página
-const products = ref<Product[]>([]); // Todos os produtos retornados pela API
+const currentPage = ref(1); 
+const itemsPerPage = ref(5); 
+const products = ref<Product[]>([]);
 const paginatedProducts = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value;
   const end = start + itemsPerPage.value;
   return products.value.slice(start, end);
 });
 
+const editProduct = (productId : any) => {
+  router.push({ name: 'UpdateProduct', params: { id: productId } });
+};
+
 const totalPages = computed(() => {
   return Math.ceil(products.value.length / itemsPerPage.value);
 });
-
 
 async function searchProducts() {
   if (!searchTerm.value.trim()) {
@@ -125,27 +133,29 @@ async function searchProducts() {
     return;
   }
 
-  let url = `http://localhost:8000/api/search?`;
-  if (searchOption.value === 'name') {
-    url += `nome=${encodeURIComponent(searchTerm.value)}`;
-  } else if (searchOption.value === 'description') {
-    url += `descricao=${encodeURIComponent(searchTerm.value)}`;
-  }
-
   try {
-    const response = await axios.get(url, {
+    const response = await axios.get('http://localhost:8000/api/products', {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
     });
+    const allProducts = response.data;
 
-    products.value = response.data; // Atualize a lista de produtos com os resultados da pesquisa
+    if (searchOption.value === 'name') {
+      products.value = allProducts.filter(product =>
+        product.name.toLowerCase().includes(searchTerm.value.toLowerCase())
+      );
+    } else if (searchOption.value === 'description') {
+      products.value = allProducts.filter(product =>
+        product.description.toLowerCase().includes(searchTerm.value.toLowerCase())
+      );
+    }
+
+    currentPage.value = 1;
   } catch (error) {
     console.error('Erro ao realizar a pesquisa:', error);
   }
 }
-
-
 
 const items = computed(() => {
   let result = [];
@@ -162,7 +172,7 @@ async function fetchProducts() {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
     });
-    products.value = response.data; // Ajuste conforme a estrutura da resposta da sua API
+    products.value = response.data;
   } catch (error) {
     console.error('Erro ao buscar produtos:', error);
   }
@@ -175,7 +185,12 @@ async function deleteProduct(productId: number) {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
     });
-    products.value = products.value.filter(product => product.id !== productId);
+    products.value = products.value.filter(product => product.id!== productId);
+    toast({
+      title: 'sucesso',
+      description: 'produto removido',
+      duration:1000
+    });
   } catch (error) {
     console.error('Erro ao excluir produto:', error);
   }
@@ -197,24 +212,37 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   width: 100%;
+}
+
+.products-list {
+  display: flex;
   flex-wrap: wrap;
-  flex-grow: 1;
-  height: 750px;
+  justify-content: center; 
+  gap: 20px; 
 }
 
-.products-list{
-  display: flex;
-  width: 100%;
-  justify-content: flex-start;
+@media (max-width: 768px) {
+  .search-container {
+    flex-direction: column;
+    align-items: stretch; 
+  }
+  .container {
+    flex-direction: column; 
+  }
+ .products-list {
+    flex-direction: column; 
+  }
 }
-
 .search-container {
+
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  width: 100%;
   display: flex;
+  justify-content: center;
   align-items: center;
-  justify-content: space-between;
   margin-bottom: 20px;
 }
-
 .container-pagination {
   display: flex;
   justify-content: center;
@@ -223,8 +251,22 @@ onMounted(() => {
 }
 
 .radio-group {
+  margin-top: 1rem;
   display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+  flex-direction: column;
+  justify-content: flex-start!important;
+  align-items: center;
+}
+
+.products-list.card {
+  max-width: calc(20% - 40px);
+  box-sizing: border-box; 
+}
+
+@media (max-width: 768px) {
+ .products-list.card {
+    max-width: 90%;
+  }
 }
 </style>
+

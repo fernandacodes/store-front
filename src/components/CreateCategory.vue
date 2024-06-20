@@ -34,7 +34,7 @@ import { toTypedSchema } from '@vee-validate/zod';
 import Input from './ui/input/Input.vue';
 import * as z from 'zod';
 import NavBar from '@/features/NavBar.vue';
-import { Button } from '@/components/ui/button';
+import Button from './ui/button/Button.vue';
 import {
   FormControl,
   FormField,
@@ -63,6 +63,8 @@ const onSubmit = form.handleSubmit(async (values) => {
         title: 'Erro',
         description: 'Token não encontrado',
         variant: 'destructive',
+        duration: 1000
+
       });
       return;
     }
@@ -75,12 +77,15 @@ const onSubmit = form.handleSubmit(async (values) => {
     toast({
       title: 'Sucesso',
       description: 'Categoria cadastrada com sucesso!',
+      duration: 1000
+
     });
   } catch (error) {
     toast({
       title: 'Erro',
       description: 'Erro durante o cadastro da categoria',
       variant: 'destructive',
+      duration: 1000
     });
   }
 });
